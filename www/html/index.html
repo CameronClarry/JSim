@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css" media="screen"/>
+        <script type="module" src="jsim.js"></script>
+        <title>JSim</title>
+    </head>
+    <h1>JSim Testing</h1>
+    <br>
+    Technically somewhat playable!
+    <br>
+	<select id="roomselect"></select>
+	<br>
+	<div class="roompane", id="roompane">
+	</div>
+	<div class="rooms">
+		<div class="roombrowser">
+			Room list goes here
+			<button id="refreshroomsbutton">Refresh room list</button>
+			<br>
+			<div class="roomlist" id="roomlist"></div>
+		</div>
+		<div class="roommaker">
+			Room name: <input type="text" id="roomname">
+			<br>
+			Room type: <input type="text" id="roomtype">
+			<br>
+			Room password: <input type="password" id="roompassword">
+			<br>
+			<button id="createroombutton">Create room</button>
+		</div>
+	</div>
+</html>

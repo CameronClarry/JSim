@@ -1,0 +1,118 @@
+:root{
+	--fg1: #cbb1ab;
+	--fg2: #af9a9c;
+	--ac1: #ae6f6d;
+	--ac2: #887267;
+	--bg1: #080e13;
+	--bg2: #282931;
+}
+
+html{
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:1.2em;
+	text-align:justify;
+	height: 100%;
+}
+
+body{
+	height: 100%;
+	margin: 0px;
+	background-color: var(--bg1);
+	color: var(--fg1);
+	height: 100%;
+}
+
+textarea{
+	background-color: var(--bg2);
+	color: var(--fg2);
+	font-size: large;
+	min-height: 100px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+input{
+	background-color: var(--bg2);
+	color: var(--fg2);
+	font-size: large;
+}
+
+input#chatin{
+	width: 100%;
+}
+
+div.roompane{
+	width: 75%;
+	float: left;
+	overflow-x: auto;
+}
+
+div.rooms{
+	width: 20%;
+	float: left;
+}
+
+div.roommaker{
+	padding: 5px;
+	width: 100%;
+}
+
+div.roombrowser{
+	width: 100%;
+}
+
+div.ldiv{
+	width: 70%;
+	float: left;
+}
+
+div.rdiv{
+	width: 30%;
+	float: left;
+}
+
+div.roomlist{
+	width: 100%;
+	height: 300px;
+	overflow-y: scroll;
+}
+
+a:link{
+	color: var(--ac1);
+}
+
+a:visited{
+	color: var(--ac1);
+}
+
+h1{
+	color: var(--fg2);
+}
+
+h2{
+	color: var(--fg2);
+}
+
+td.jtd{
+	min-width: 200px;
+	height: 100px;
+	padding: 10px;
+}
+
+th.jth{
+	min-width: 100px;
+	min-height: 30px;
+}
+
+table, th, td{
+	border: 1px solid var(--ac1);
+	border-collapse: collapse;
+}
+
+div.jquestion{
+	text-align: center;
+}
+
+div.jtitle{
+	text-align: center;
+}
