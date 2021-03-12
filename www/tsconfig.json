@@ -1,0 +1,16 @@
+{
+	"compilerOptions":{
+		"target": "es6",
+		"module": "es2015",
+		"outDir": "./html",
+		"strict": true,
+		"sourceMap": true,
+		"typeRoots": [
+			"node_modules/@types"
+		]
+	},
+	"exclude": [
+		"dist",
+		"node_modules"
+	]
+}
