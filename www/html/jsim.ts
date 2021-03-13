@@ -29,7 +29,7 @@ let roomSelect: HTMLSelectElement;
 // Room creation elements
 let createRoomButton: HTMLInputElement;
 let roomNameInput: HTMLInputElement;
-let roomTypeInput: HTMLInputElement;
+let roomTypeInput: HTMLSelectElement;
 let roomPasswordInput: HTMLInputElement;
 
 // Room list elements
@@ -67,7 +67,7 @@ window.onload = ()=>{
 	// Get all of the HTML elements that will be needed
     createRoomButton = (<HTMLInputElement>document.getElementById('createroombutton'));
     roomNameInput = (<HTMLInputElement>document.getElementById('roomname'));
-    roomTypeInput = (<HTMLInputElement>document.getElementById('roomtype'));
+    roomTypeInput = (<HTMLSelectElement>document.getElementById('roomtype'));
     roomPasswordInput = (<HTMLInputElement>document.getElementById('roompassword'));
     refreshRoomsButton = (<HTMLInputElement>document.getElementById('refreshroomsbutton'));
     roomListDiv = (<HTMLElement>document.getElementById('roomlist'));
@@ -85,6 +85,13 @@ window.onload = ()=>{
 
 	roomSelect.oninput = (event)=>{
 		switchRoom(roomSelect.value);
+	}
+
+	for(let id in roomTypes){
+		let option = document.createElement('option');
+		option.value = id;
+		option.text = id;
+		roomTypeInput.add(option);
 	}
 
 }
