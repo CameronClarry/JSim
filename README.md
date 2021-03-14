@@ -18,3 +18,14 @@ or both with
 ```
 source compile.sh
 ```
+
+## Running
+The main file is the generated `server.js`, and it is run by
+```
+node server.js
+```
+This will provide the websocket and serve the HTML on ports 9000 and 9443. Public/private keys will need to be given in
+```
+certs/fullchain.pem
+certs/privkey.pem
+```
