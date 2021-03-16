@@ -7,14 +7,14 @@ class InputSquare{
 	qInput: HTMLInputElement;
 	value: number;
 	div: HTMLElement;
-	constructor(text: string, qNum: number){
+	constructor(text: string, value: number){
 		// Make all of the HTML elements needed
 		this.div = document.createElement('div');
 		this.div.className = 'jquestion';
 		this.qInput = document.createElement('input');
 		this.qInput.placeholder = text;
 		this.div.appendChild(this.qInput);
-		this.value = (qNum+1)*100;
+		this.value = value;
 	}
 }
 
@@ -34,11 +34,11 @@ class LabelSquare{
 class Category{
 	title: InputSquare;
 	questions: InputSquare[];
-	constructor(){
+	constructor(numQuestions: number){
 		this.title = new InputSquare('(category title here)', 0);
 		this.questions = [];
-		for(let i=0 ; i < 5 ; i++){
-			this.questions.push(new InputSquare('(question here)', i));
+		for(let i=0 ; i < numQuestions ; i++){
+			this.questions.push(new InputSquare('(question here)', (i+1)*100));
 		}
 	}
 }
@@ -107,10 +107,22 @@ export class BoardMaker extends BaseRoom{
 		// Make the categories
 		this.categories = [];
 		for(let i=0 ; i < 6 ; i++){
-			this.categories.push(new Category());
+			this.categories.push(new Category(5));
 		}
 
-		// Now make the HTML table and fill it in
+
+		this.createTable();
+
+		this.giveFeedback('Fill out the category names and questions, give your board a name, and then hit the save button.');
+	}
+
+	createTable(){
+		// First remove the children of the board div
+		while(this.boardDiv.firstChild){
+			this.boardDiv.removeChild(this.boardDiv.firstChild);
+		}
+
+		// Then, create the table from the current categories
 		let table = document.createElement('table')
 		table.className = 'jtable';
 		let headerRow = document.createElement('tr');
@@ -147,8 +159,6 @@ export class BoardMaker extends BaseRoom{
 		}
 
 		this.boardDiv.appendChild(table);
-
-		this.giveFeedback('Fill out the category names and questions, give your board a name, and then hit the save button.');
 	}
 
 	save(){
@@ -167,7 +177,10 @@ export class BoardMaker extends BaseRoom{
 			this.giveFeedback(`Overwriting previous board ${id}...`);
 		}
 
-		localStorage.setItem(id, boardString);
+		//console.log(boardString);
+		//console.log(boardString.trim());
+
+		localStorage.setItem(id, boardString.trim());
 
 		this.giveFeedback(`Saved the board as ${id}`);
 	}
@@ -179,7 +192,15 @@ export class BoardMaker extends BaseRoom{
 
 		let item = localStorage.getItem(id);
 		if(item){
-			this.giveFeedback(item);
+			let categories = [];
+			let lines = item.split('\n');
+			for(let line of lines){
+				categories.push(lineToCategory(line));
+			}
+			this.categories = categories;
+			this.createTable();
+			//this.giveFeedback(item);
+			this.giveFeedback(`Loaded the board ${id}`);
 		}else{
 			this.giveFeedback(`Could not find the board ${id}`);
 		}
@@ -208,5 +229,28 @@ export class BoardMaker extends BaseRoom{
 
 	giveFeedback(text: string){
 		this.feedback.value = this.feedback.value + `\n${text}`;
+		this.feedback.scrollTop = this.feedback.scrollHeight;
 	}
+}
+
+let lineToCategory = (line: string): Category => {
+	// Take a line of text, return a category
+	// cat|Category|q1|v1|q2|v2|...
+
+	let parts = line.split('|');
+	let catName = parts[1];
+	let numQuestions = (parts.length-2)/2;
+	let category = new Category(numQuestions);
+
+	category.title.qInput.value = catName;
+	for(let i=0 ; i < numQuestions ; i++){
+		let q = category.questions[i];
+		q.qInput.value = parts[2*i+2];
+		q.value = parseInt(parts[2*i+3]);
+	}
+
+	//console.log(line);
+	//console.log(`Made category with ${numQuestions} questions`);
+
+	return category;
 }
