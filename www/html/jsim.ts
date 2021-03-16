@@ -6,6 +6,7 @@ import { toId } from './utils.js';
 import { BaseRoom } from './roomtypes/base.js';
 import { ChatRoom } from './roomtypes/chat.js';
 import { JeopardyRoom } from './roomtypes/jeopardy.js';
+import { BoardMaker } from './roomtypes/boardmaker.js';
 
 webSocket.onopen = ()=>{
 	webSocket.send('|queryrooms');
@@ -19,7 +20,8 @@ let currentRoom: string = '';
 let roomTypes:{[id: string] : typeof BaseRoom;} = {
 	base: BaseRoom,
 	chat: ChatRoom,
-	jeopardy: JeopardyRoom
+	jeopardy: JeopardyRoom,
+	boardmaker: BoardMaker
 }
 
 
@@ -93,7 +95,8 @@ window.onload = ()=>{
 		option.text = id;
 		roomTypeInput.add(option);
 	}
-
+	
+	initRoom('boardmaker', 'Jeopardy Board Maker', '');
 }
 
 // Used to send a request to the server to create a new room
@@ -102,7 +105,13 @@ let requestCreateRoom = ()=>{
 	let roomName = roomNameInput.value;
 	let roomType = toId(roomTypeInput.value);
 	let roomPassword = roomPasswordInput.value;
-	// TODO display an error if the room name has a |
+	if(roomName.includes('|')){
+		// TODO display an error if the room name has a |
+		return;
+	}else if(rooms[toId(roomName)]){
+		// TODO display an error when trying to make a room that exists
+		return;
+	}
 	webSocket.send(`|createroom|${roomType}|${roomName}|${roomPassword}`);
 }
 
@@ -212,3 +221,4 @@ let switchRoom = (roomId: string)=>{
 	if(rooms[currentRoom]) mainDiv.appendChild(rooms[currentRoom].mainDiv);
 	if(roomSelect.value !== roomId) roomSelect.value = roomId;
 }
+
