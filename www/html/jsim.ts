@@ -28,6 +28,11 @@ let roomTypes:{[id: string] : typeof BaseRoom;} = {
 let mainDiv: HTMLElement;
 let roomSelect: HTMLSelectElement;
 
+let roomBrowser: HTMLElement;
+let roomToggleButton: HTMLButtonElement;
+let roomToggleButton2: HTMLButtonElement;
+let showSidebar = false;
+
 // Room creation elements
 let createRoomButton: HTMLInputElement;
 let roomNameInput: HTMLInputElement;
@@ -67,6 +72,9 @@ webSocket.onmessage = (event)=>{
 
 window.onload = ()=>{
 	// Get all of the HTML elements that will be needed
+	roomBrowser = (<HTMLElement>document.getElementById('sidenav'));
+	roomToggleButton = (<HTMLButtonElement>document.getElementById('roomtoggle'));
+	roomToggleButton2 = (<HTMLButtonElement>document.getElementById('roomtoggle2'));
     createRoomButton = (<HTMLInputElement>document.getElementById('createroombutton'));
     roomNameInput = (<HTMLInputElement>document.getElementById('roomname'));
     roomTypeInput = (<HTMLSelectElement>document.getElementById('roomtype'));
@@ -79,6 +87,13 @@ window.onload = ()=>{
 	// Set up event listeners on elements that the user can interact with
 	createRoomButton.onclick = (event)=>{
 		requestCreateRoom();
+	}
+
+	roomToggleButton.onclick = (event)=>{
+		toggleSidebar();
+	}
+	roomToggleButton2.onclick = (event)=>{
+		toggleSidebar();
 	}
 
 	refreshRoomsButton.onclick = (event)=>{
@@ -222,3 +237,11 @@ let switchRoom = (roomId: string)=>{
 	if(roomSelect.value !== roomId) roomSelect.value = roomId;
 }
 
+let toggleSidebar = ()=>{
+	showSidebar = !showSidebar;
+	if(showSidebar){
+		roomBrowser.style.width = "500px";
+	}else{
+		roomBrowser.style.width = "0px";
+	}
+}

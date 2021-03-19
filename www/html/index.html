@@ -10,13 +10,17 @@
     Technically somewhat playable!
     <br>
 	<select id="roomselect"></select>
+	<button id="roomtoggle">Toggle Room Browser</button>
 	<br>
 	<div class="roompane", id="roompane">
 	</div>
-	<div class="rooms">
+	<div class="sidenav" id="sidenav">
+		<div class="navcontainer">
 		<div class="roombrowser">
-			Room list goes here
+			<h1>Room Browser</h1>
+			<br>
 			<button id="refreshroomsbutton">Refresh room list</button>
+			<button id="roomtoggle2">Toggle Room Browser</button>
 			<br>
 			<div class="roomlist" id="roomlist"></div>
 		</div>
@@ -28,6 +32,7 @@
 			Room password: <input type="password" id="roompassword">
 			<br>
 			<button id="createroombutton">Create room</button>
+		</div>
 		</div>
 	</div>
 </html>
