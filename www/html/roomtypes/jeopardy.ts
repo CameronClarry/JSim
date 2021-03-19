@@ -211,6 +211,10 @@ export class JeopardyRoom extends BaseRoom{
 				this.webSocket.send(`${this.id}|buzzoff`);
 			}else if(command === 'correct'){
 				this.webSocket.send(`${this.id}|correct|${args[0]}|${args[1]}|${args[2]}`);
+			}else if(command === 'board'){
+				this.sendBoard(args[0]);
+			}else{
+				this.giveFeedback(`The command '${command}' was not found.`);
 			}
 		}else{
 			this.webSocket.send(this.id+'|t|'+this.textInput.value);
@@ -236,6 +240,8 @@ export class JeopardyRoom extends BaseRoom{
 			this.buzzButton.disabled = true;
 		}else if(messageParts[0] === 'canbuzz'){
 			this.buzzButton.disabled = false;
+		}else if(messageParts[0] === 'board'){
+			// The client should remake their board
 		}
 	}
 
@@ -309,6 +315,29 @@ export class JeopardyRoom extends BaseRoom{
 			// Show the buzz button
 			this.buzzButton.style.visibility = 'visible';
 		}
+	}
+
+	// Sends a saved board to the server to replace the current one
+	sendBoard(boardName: string){
+		// Sent board has the form
+		// roomid|board|
+		// cat|Category|q1|v1|q2|v2...
+		// cat|Category|...
+		// ...
+		
+		let boardId = toId(boardName);
+		let boardStr = localStorage.getItem(boardId);
+		if(boardStr){
+			let message = `${this.id}|board|\n${boardStr}`;
+			this.webSocket.send(message);
+		}else{
+			this.giveFeedback(`The saved board '${boardName}' could not be found.`);
+		}
+	}
+
+	giveFeedback(text: string){
+		this.textArea.value = this.textArea.value + '\n' + text;
+		this.textArea.scrollTop = this.textArea.scrollHeight;
 	}
 
 	disable(){
