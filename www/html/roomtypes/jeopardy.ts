@@ -152,16 +152,21 @@ export class JeopardyRoom extends BaseRoom{
 		}
 		this.numCategories = this.categories.length;
 
-		// Add the categories to the board div
-		//for(let category of this.categories){
-			//this.boardDiv.appendChild(category.div);
-		//}
+		this.createTable();
+	}
 
-		// New approach: store everything in a table
+	// (re)creates the table from the stored categories and questions
+	createTable(){
+		// First remove the children of the board div
+		while(this.boardDiv.firstChild){
+			this.boardDiv.removeChild(this.boardDiv.firstChild);
+		}
+
+		// Then, create the table from the current categories
 		let table = document.createElement('table')
 		table.className = 'jtable';
 		let headerRow = document.createElement('tr');
-		// Create the headers
+		// Create the row of category titles
 		for(let cat of this.categories){
 			let th = document.createElement('th');
 			th.className = 'jth';
@@ -174,6 +179,7 @@ export class JeopardyRoom extends BaseRoom{
 		for(let i=0 ; i < this.categories[0].numQuestions ; i++){
 			let tr = document.createElement('tr');
 			tr.className = 'jtr';
+
 			for(let cat of this.categories){
 				let td = document.createElement('td');
 				td.className = 'jtd';
@@ -243,6 +249,7 @@ export class JeopardyRoom extends BaseRoom{
 			this.buzzButton.disabled = false;
 		}else if(messageParts[0] === 'board'){
 			// The client should remake their board
+			this.replaceBoard(messageParts);
 		}
 	}
 
@@ -334,6 +341,23 @@ export class JeopardyRoom extends BaseRoom{
 		}else{
 			this.giveFeedback(`The saved board '${boardName}' could not be found.`);
 		}
+	}
+
+	// This function will update the whole board and then broadcast it to all players
+	replaceBoard(messageParts: string[]){
+		// First, reconstruct the original message
+		let message = messageParts.join('|');
+		let lines = message.split('\n').slice(1);
+
+		// Create the new list of categories
+		let newCategories = [];
+		for(let i=0 ; i < lines.length ; i++){
+			newCategories.push(new Category(lines[i]));
+		}
+
+		// Replace the existing list and broadcast the change
+		this.categories = newCategories;
+		this.createTable();
 	}
 
 	giveFeedback(text: string){

@@ -198,6 +198,10 @@ export class JeopardyRoom extends BaseRoom{
 			if(this.isHost(from)){
 				this.setBuzzing(false);
 			}
+		}else if(messageParts[0] === 'board'){
+			if(this.isHost(from)){
+				this.replaceBoard(messageParts);
+			}
 		}
 	}
 
@@ -396,8 +400,8 @@ export class JeopardyRoom extends BaseRoom{
 	broadcastBoard(){
 		let hostBoard = this.getBoardString(true);
 		let playerBoard = this.getBoardString(false);
-		let hostMessage = `${this.id}|board\n${hostBoard}`;
-		let playerMessage = `${this.id}|board\n${playerBoard}`;
+		let hostMessage = `${this.id}|board|\n${hostBoard}`;
+		let playerMessage = `${this.id}|board|\n${playerBoard}`;
 		for(let id in this.users){
 			let player = this.users[id];
 			if(this.isHost(player)){
@@ -407,4 +411,45 @@ export class JeopardyRoom extends BaseRoom{
 			}
 		}
 	}
+
+	// This function will update the whole board and then broadcast it to all players
+	replaceBoard(messageParts: string[]){
+		// First, reconstruct the original message
+		let message = messageParts.join('|');
+		let lines = message.split('\n').slice(1);
+
+		// Create the new list of categories
+		let newCategories = [];
+		for(let i=0 ; i < lines.length ; i++){
+			newCategories.push(lineToCategory(lines[i], i));
+		}
+
+		// Replace the existing list and broadcast the change
+		this.categories = newCategories;
+		this.broadcastBoard();
+	}
+}
+
+let lineToCategory = (line: string, catNumber: number): Category => {
+	// Take a line of text, return a category
+	// cat|Category|q1|v1|q2|v2|...
+
+	let parts = line.split('|');
+	let catName = parts[1];
+	let numQuestions = (parts.length-2)/2;
+	let category = new Category(catNumber, catName, numQuestions, 1);
+
+	for(let i=0 ; i < numQuestions ; i++){
+		let q = category.questions[i];
+		q.q = parts[2*i+2];
+		q.value = parseInt(parts[2*i+3]);
+	}
+
+	return category;
+}
+
+let categoryToLine = (cat: Category): string => {
+	// Take a category, return a string
+	// cat|Category|q1|v1|q2|v2|...
+	return `cat|${cat.name}|${cat.questions.map(q=>{return `${q.q}|${q.value}`}).join('|')}`;
 }
