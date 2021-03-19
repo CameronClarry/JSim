@@ -11,6 +11,7 @@ export class ChatRoom extends BaseRoom{
 	populateDiv(mainDiv: HTMLElement){
 		// Create the text area and the input
 		this.textArea = document.createElement('textarea');
+		this.textArea.disabled = true;
 		this.br = document.createElement('br');
 		this.textInput = document.createElement('input');
 		this.textInput.type = 'text';
