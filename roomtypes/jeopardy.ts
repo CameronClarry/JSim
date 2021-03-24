@@ -75,6 +75,7 @@ export class JeopardyRoom extends BaseRoom{
 
 	// Gets a string representing the board. Each category is one line of the form
 	// cat|Name|q1|$1|q2|$2|q3|$3...
+	// TODO this should use categoryToLine 
 	getBoardString(showHidden: boolean): string {
 		let boardString = '';
 		let first = true;
@@ -88,9 +89,9 @@ export class JeopardyRoom extends BaseRoom{
 			for(let question of category.questions){
 				if(showHidden || question.asked){
 					// If the question has been asked or the board is for a host, we can show the question
-					catMessage = catMessage + `|${question.q}|${question.value}`;
+					catMessage = catMessage + `|${question.q}|${question.value}|${question.asked ? 'y':'n'}`;
 				}else{
-					catMessage = catMessage + `||${question.value}`;
+					catMessage = catMessage + `||${question.value}|${question.asked ? 'y':'n'}`;
 				}
 			}
 			boardString = boardString + catMessage;
@@ -386,12 +387,12 @@ export class JeopardyRoom extends BaseRoom{
 		if(question.asked){
 			// If the question is visible, broadcast it to all users
 			for(let id in this.users){
-				this.users[id].send(`${this.id}|q|${question.catNumber}|${question.qNumber}|${question.q}`);
+				this.users[id].send(`${this.id}|q|${question.catNumber}|${question.qNumber}|y|${question.q}`);
 			}
 		}else{
 			// If the question is not visible, broadcast to hosts
 			for(let user of this.hosts){
-				user.send(`${this.id}|q|${question.catNumber}|${question.qNumber}|${question.q}`);
+				user.send(`${this.id}|q|${question.catNumber}|${question.qNumber}|n|${question.q}`);
 			}
 		}
 	}
@@ -451,5 +452,5 @@ let lineToCategory = (line: string, catNumber: number): Category => {
 let categoryToLine = (cat: Category): string => {
 	// Take a category, return a string
 	// cat|Category|q1|v1|q2|v2|...
-	return `cat|${cat.name}|${cat.questions.map(q=>{return `${q.q}|${q.value}`}).join('|')}`;
+	return `cat|${cat.name}|${cat.questions.map(q=>{return `${q.q}|${q.value}|${q.asked ? 'y':'n'}`}).join('|')}`;
 }

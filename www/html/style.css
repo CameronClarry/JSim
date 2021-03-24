@@ -134,6 +134,12 @@ div.jquestion{
 	text-align: center;
 }
 
+div.jquestiona{
+	text-align: center;
+	background-color: var(--bg2);
+	color: var(--ac2);
+}
+
 div.jtitle{
 	text-align: center;
 }

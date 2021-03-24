@@ -6,15 +6,17 @@ class Question{
 	q: string;
 	qLabel: Text;
 	points: number;
+	asked: boolean;
 	div: HTMLElement;
-	constructor(q: string, points: number){
+	constructor(q: string, points: number, asked: boolean){
 		console.log(`making question with q ${q} and points ${points}`);
 		this.q = q;
 		this.points = points;
+		this.asked = asked;
 		
 		// Make all of the HTML elements needed
 		this.div = document.createElement('div');
-		this.div.className = 'jquestion';
+		this.div.className = this.asked ? 'jquestiona' : 'jquestion';
 		if(q === ''){
 			this.qLabel = document.createTextNode(`$${points}`);
 		}else{
@@ -40,10 +42,10 @@ class Category{
 	constructor(initString: string){
 		let parts = initString.split('|');
 		this.name = parts[1];
-		this.numQuestions = parts.length/2 - 1;
+		this.numQuestions = (parts.length-2)/3;
 		this.questions = [];
 		for(let i=0 ; i < this.numQuestions ; i++){
-			this.questions.push(new Question(parts[2*i+2], parseInt(parts[2*i+3])));
+			this.questions.push(new Question(parts[3*i+2], parseInt(parts[3*i+3]), parts[3*i+4] === 'y'));
 		}
 
 		// Add the category title and question divs to the category div
@@ -264,9 +266,12 @@ export class JeopardyRoom extends BaseRoom{
 		let qNumber = parseInt(parts[2]);
 		if(!this.isValid(catNumber, qNumber)) return;
 
-		let qText = parts.slice(3).join('|');
-		this.categories[catNumber].questions[qNumber].updateQuestion(qText);
+		let qText = parts.slice(4).join('|');
+		let question = this.categories[catNumber].questions[qNumber];
+		question.updateQuestion(qText);
 
+		// Change its style if it has been asked
+		if(parts[3] === 'y') question.div.className = 'jquestiona';
 	}
 
 	updateCategory(parts: string[]){
