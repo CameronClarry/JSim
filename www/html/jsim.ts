@@ -42,6 +42,7 @@ let roomPasswordInput: HTMLInputElement;
 // Room list elements
 let refreshRoomsButton: HTMLInputElement;
 let roomListDiv: HTMLElement;
+let roomListTable: HTMLElement;
 
 webSocket.onmessage = (event)=>{
     console.log(event.data);
@@ -81,6 +82,7 @@ window.onload = ()=>{
     roomPasswordInput = (<HTMLInputElement>document.getElementById('roompassword'));
     refreshRoomsButton = (<HTMLInputElement>document.getElementById('refreshroomsbutton'));
     roomListDiv = (<HTMLElement>document.getElementById('roomlist'));
+    roomListTable = (<HTMLElement>document.getElementById('roomtable'));
     mainDiv = (<HTMLElement>document.getElementById('roompane'));
 	roomSelect = (<HTMLSelectElement>document.getElementById('roomselect'));
 
@@ -134,59 +136,70 @@ let requestCreateRoom = ()=>{
 let updateRoomList = (roomIds: string[])=>{
 	console.log('updating room list:');
 	console.log(roomIds);
-	while(roomListDiv.lastChild){
-		roomListDiv.removeChild(roomListDiv.lastChild);
+	while(roomListTable.lastChild){
+		roomListTable.removeChild(roomListTable.lastChild);
 	}
 	for(let entry of roomIds){
-		let parts = entry.split(',');
-		let roomName = parts[0];
-		let roomId = toId(roomName);
-		let userCount = parseInt(parts[1]);
-		// Parse name, user count, and password
-		// Create an entry for the room: name, player count, needs password
-		let entryDiv = document.createElement('div');
-		entryDiv.className = 'roomentry';
-		// Left div contains room name, and password field if required
-		let lDiv = document.createElement('div');
-		lDiv.className = 'ldiv';
-		let topDiv = document.createElement('div');
-		topDiv.textContent = roomName;
-		let br = document.createElement('br');
-		let pwLabel = document.createTextNode('Password: ');
-		let pwField = document.createElement('input');
-		pwField.type = 'password';
-		lDiv.appendChild(topDiv);
-		lDiv.appendChild(br);
-		if(parts[2] == 'y'){
-			lDiv.appendChild(pwLabel);
-			lDiv.appendChild(pwField);
-		}
-
-		// Right div contains password status, user count, and join button
-		let rDiv = document.createElement('div');
-		rDiv.className = 'rdiv';
-		let countLabel = document.createTextNode(`Users: ${userCount}`);
-		br = document.createElement('br');
-		let joinButton = document.createElement('button');
-		if(!(roomId in rooms)){
-			joinButton.textContent = 'Join';
-			joinButton.onclick = (event)=>{
-				webSocket.send(`|join|${roomId}|${pwField.value}`);
-			}
-		}else{
-			joinButton.textContent = 'Leave';
-			joinButton.onclick = (event)=>{
-				webSocket.send(`|leave|${roomId}`);
-			}
-		}
-		rDiv.appendChild(countLabel);
-		rDiv.appendChild(br);
-		rDiv.appendChild(joinButton);
-
-		entryDiv.append(lDiv);
-		entryDiv.append(rDiv);
-		roomListDiv.appendChild(entryDiv);
+		let tr = createRoomListing(entry);
+		roomListTable.appendChild(tr);
 	}
+}
+
+// Creates a table element to be put in the room browser
+let createRoomListing = function(roomStr: string): HTMLElement {
+	let parts = roomStr.split(',');
+
+	// Parse name, user count, and password
+	let roomName = parts[0];
+	let roomId = toId(roomName);
+	let userCount = parseInt(parts[1]);
+
+	// Create an entry for the room: name, player count, needs password
+	let td = document.createElement('td');
+	td.className = 'roomtd';
+
+	// Left div contains room name, and password field if required
+	let lDiv = document.createElement('div');
+	lDiv.className = 'ldiv';
+	let topDiv = document.createElement('div');
+	topDiv.textContent = roomName;
+	let br = document.createElement('br');
+	let pwLabel = document.createTextNode('Password: ');
+	let pwField = document.createElement('input');
+	pwField.type = 'password';
+	lDiv.appendChild(topDiv);
+	lDiv.appendChild(br);
+	if(parts[2] == 'y'){
+		lDiv.appendChild(pwLabel);
+		lDiv.appendChild(pwField);
+	}
+
+	// Right div contains password status, user count, and join button
+	let rDiv = document.createElement('div');
+	rDiv.className = 'rdiv';
+	let countLabel = document.createTextNode(`Users: ${userCount}`);
+	br = document.createElement('br');
+	let joinButton = document.createElement('button');
+	if(!(roomId in rooms)){
+		joinButton.textContent = 'Join';
+		joinButton.onclick = (event)=>{
+			webSocket.send(`|join|${roomId}|${pwField.value}`);
+		}
+	}else{
+		joinButton.textContent = 'Leave';
+		joinButton.onclick = (event)=>{
+			webSocket.send(`|leave|${roomId}`);
+		}
+	}
+	rDiv.appendChild(countLabel);
+	rDiv.appendChild(br);
+	rDiv.appendChild(joinButton);
+
+	td.appendChild(lDiv);
+	td.appendChild(rDiv);
+	let tr = document.createElement('tr');
+	tr.appendChild(td);
+	return tr;
 }
 
 let initRoom = (roomType: string, name: string, initText: string)=>{
