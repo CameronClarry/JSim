@@ -122,7 +122,7 @@ let requestCreateRoom = ()=>{
 	let roomName = roomNameInput.value;
 	let roomType = toId(roomTypeInput.value);
 	let roomPassword = roomPasswordInput.value;
-	if(roomName.includes('|')){
+	if(roomName.includes('|') || roomName.includes(',')){
 		// TODO display an error if the room name has a |
 		return;
 	}else if(rooms[toId(roomName)]){

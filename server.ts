@@ -8,15 +8,12 @@ import * as fs from 'fs';
 import { BaseRoom, User } from './roomtypes/base';
 import { ChatRoom } from './roomtypes/chat';
 import { JeopardyRoom } from './roomtypes/jeopardy';
+import { toId, cleanName } from './utils';
 
 const httpPort = 9000;
 const httpsPort = 9443;
 
 let connectionCount = 0;
-
-let toId = function(input: string){
-	return input.toLowerCase().replace(/[^a-z\d]/g, '');
-}
 
 let privateKey  = fs.readFileSync('certs/privkey.pem', 'utf8');
 let certificate = fs.readFileSync('certs/fullchain.pem', 'utf8');
@@ -76,7 +73,7 @@ wss.on('connection', (ws: WebSocket) => {
 				// |createroom|roomtype|roomname|password
 				let roomType = parts[2];
 				// TODO disallow | and , in room names
-				let roomName = parts[3];
+				let roomName = cleanName(parts[3]);
 				let roomPassword = parts.slice(4).join('|');
 				if(!(roomType in roomTypes)){
 					user.send('|error|Invalid room type given.');
