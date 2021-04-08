@@ -102,6 +102,7 @@ export class JeopardyRoom extends BaseRoom{
 	addUser(user: User){
 		if(this.users[user.id]) return;
 		this.users[user.id] = user;
+		this.usernames[user.userid] = user;
 		this.sendInit(user);
 		this.userCount += 1;
 		if(this.userCount === 1){
@@ -114,12 +115,6 @@ export class JeopardyRoom extends BaseRoom{
 		let initMessage = `|init|jeopardy|${this.name}|Welcome to ${this.name}`;
 		initMessage = `${initMessage}\n${this.getBoardString(false)}`;
 		user.send(initMessage);
-	}
-
-	broadcastMessage(message: string){
-		for(let i in this.users){
-			this.users[i].send(message);
-		}
 	}
 
 	// Called when a user sends a message to a room.
@@ -167,7 +162,7 @@ export class JeopardyRoom extends BaseRoom{
 			// spec|userid
 			// First check if the sender is a host
 			if(this.isHost(from)){
-				let userid = parseInt(messageParts[1]);
+				let userid = toId(messageParts[1]);
 				this.setSpectator(userid);
 			}
 		}else if(messageParts[0] === 'player'){
@@ -175,7 +170,8 @@ export class JeopardyRoom extends BaseRoom{
 			// spec|userid
 			// First check if the sender is a host
 			if(this.isHost(from)){
-				let userid = parseInt(messageParts[1]);
+				let userid = toId(messageParts[1]);
+				console.log(userid);
 				this.setPlayer(userid);
 			}
 		}else if(messageParts[0] === 'buzz'){
@@ -186,7 +182,7 @@ export class JeopardyRoom extends BaseRoom{
 			if(this.isHost(from)){
 				let catNumber = parseInt(messageParts[1]);
 				let qNumber = parseInt(messageParts[2]);
-				let userid = parseInt(messageParts[3]);
+				let userid = toId(messageParts[3]);
 				this.correctAnswer(catNumber, qNumber, userid);
 			}
 		}else if(messageParts[0] === 'buzzon'){
@@ -207,12 +203,12 @@ export class JeopardyRoom extends BaseRoom{
 	}
 
 	// Marks a user as a spectator
-	setSpectator(userid: number){
+	setSpectator(userid: string){
 		// Check that the id specifies a valid player
 		if(!this.idIsPlayer(userid)) return;
 
 		for(let i=0 ; i < this.players.length ; i++){
-			if(this.players[i].user.id === userid){
+			if(this.players[i].user.userid === userid){
 				// Tell all users that userid is now a spectator
 				this.broadcastMessage(`${this.id}|spec|${toId(this.players[i].user.username)}`);
 				// Tell userid that they should update their ui
@@ -225,12 +221,12 @@ export class JeopardyRoom extends BaseRoom{
 	}
 
 	// Marks a user as a player
-	setPlayer(userid: number){
+	setPlayer(userid: string){
 		// Check that the id specifies a valid spectator
 		if(!this.idIsSpectator(userid)) return;
 
 		// Create a player object and add it to the list
-		let user = this.users[userid];
+		let user = this.usernames[userid];
 		let player = new Player(user);
 		this.players.push(player);
 
@@ -242,29 +238,35 @@ export class JeopardyRoom extends BaseRoom{
 	}
 
 	// Gets a player object
-	getPlayer(userid: number): Player | undefined {
+	getPlayer(userid: string): Player | undefined {
 		for(let player of this.players){
-			if(player.user.id === userid) return player;
+			if(player.user.userid === userid) return player;
 		}
 		return;
 	}
 
-	idIsPlayer(userid: number): boolean {
+	idIsPlayer(userid: string): boolean {
 		// may need to remove the check for this.users[userid], otherwise breaks when someone leaves
-		if(isNaN(userid) || !this.users[userid]) return false;
+		if(!userid || !this.usernames[userid]) return false;
 
 		for(let player of this.players){
-			if(player.user.id === userid) return true;
+			if(player.user.userid === userid) return true;
 		}
 
 		return false;
 	}
 
-	idIsSpectator(userid: number): boolean {
+	idIsSpectator(userid: string): boolean {
 		// userid is in the user list, but they are not a player or a host
-		if(isNaN(userid) || !this.users[userid]) return false;
+		console.log(`Checking id ${userid}`);
+		console.log(this.usernames[userid]);
+		for(let userid in this.usernames){
+			console.log(userid);
+			console.log(this.usernames[userid]);
+		}
+		if(!userid || !this.usernames[userid]) return false;
 
-		if(this.isHost(this.users[userid]) || this.idIsPlayer(userid)) return false;
+		if(this.isHost(this.usernames[userid]) || this.idIsPlayer(userid)) return false;
 
 		return true;
 	}
@@ -318,7 +320,7 @@ export class JeopardyRoom extends BaseRoom{
 	}
 
 	// Awards points to a player
-	correctAnswer(catNumber: number, qNumber: number, userid: number){
+	correctAnswer(catNumber: number, qNumber: number, userid: string){
 		if(!this.isValid(catNumber, qNumber) || !this.idIsPlayer(userid)) return;
 
 		// turn off buzzing

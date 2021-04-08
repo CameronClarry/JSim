@@ -44,6 +44,11 @@ let refreshRoomsButton: HTMLInputElement;
 let roomListDiv: HTMLElement;
 let roomListTable: HTMLElement;
 
+// Name related elements
+let nameLabel: HTMLInputElement;
+let newNameLabel: HTMLInputElement;
+let changeNameButton: HTMLButtonElement;
+
 webSocket.onmessage = (event)=>{
     console.log(event.data);
     console.log(event);
@@ -63,6 +68,10 @@ webSocket.onmessage = (event)=>{
 		}else if(parts[1] === 'deinit'){
 			// Destroy a room
 			deinitRoom(parts[2]);
+		}else if(parts[1] === 'n'){
+			// The user's name changed
+			nameLabel.value = parts[2];
+			newNameLabel.value = '';
 		}
     }else{
 		if(rooms[parts[0]]){
@@ -86,9 +95,18 @@ window.onload = ()=>{
     mainDiv = (<HTMLElement>document.getElementById('roompane'));
 	roomSelect = (<HTMLSelectElement>document.getElementById('roomselect'));
 
+	nameLabel = (<HTMLInputElement>document.getElementById('currentname'));
+	newNameLabel = (<HTMLInputElement>document.getElementById('newname'));
+	changeNameButton = (<HTMLButtonElement>document.getElementById('changeuser'));
+
 	// Set up event listeners on elements that the user can interact with
 	createRoomButton.onclick = (event)=>{
 		requestCreateRoom();
+	}
+
+	newNameLabel.placeholder = 'Enter new name here';
+	changeNameButton.onclick = (event)=>{
+		requestNameChange();
 	}
 
 	roomToggleButton.onclick = (event)=>{
@@ -112,8 +130,14 @@ window.onload = ()=>{
 		option.text = id;
 		roomTypeInput.add(option);
 	}
+
+	nameLabel.disabled = true;
 	
 	initRoom('boardmaker', 'Jeopardy Board Maker', '');
+}
+
+let requestNameChange = ()=>{
+	webSocket.send(`|cn|${newNameLabel.value}`);
 }
 
 // Used to send a request to the server to create a new room

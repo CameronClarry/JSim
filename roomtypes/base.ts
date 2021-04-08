@@ -6,10 +6,16 @@ export class User{
 	id: number;
 	ws: WebSocket;
 	username: string;
+	userid: string;
 	constructor(id: number, ws: WebSocket){
 		this.id = id;
 		this.ws = ws;
 		this.username = 'Guest ' + id;
+		this.userid = toId(this.username);
+	}
+	setUsername(username: string){
+		this.username = username;
+		this.userid = toId(username);
 	}
 	send(message: string){
 		this.ws.send(message);
@@ -21,6 +27,7 @@ export class BaseRoom{
 	id: string;
 	name: string;
 	users: {[id: number] : User};
+	usernames: {[userid: string] : User};
 	password: string;
 	userCount: number;
 	roomType: string;
@@ -28,6 +35,7 @@ export class BaseRoom{
 		this.name = name;
 		this.id = toId(name);
 		this.users = {};
+		this.usernames = {};
 		this.password = password;
 		this.userCount = 0;
 		this.roomType = 'base';
@@ -36,6 +44,7 @@ export class BaseRoom{
 	addUser(user: User){
 		if(this.users[user.id]) return;
 		this.users[user.id] = user;
+		this.usernames[user.userid] = user;
 		this.sendInit(user);
 		this.userCount += 1;
 	}
@@ -47,8 +56,23 @@ export class BaseRoom{
 	removeUser(user: User){
 		if(!this.users[user.id]) return;
 		delete this.users[user.id];
+		delete this.usernames[user.userid];
 		this.sendDeinit(user);
 		this.userCount -= 1;
+	}
+
+	broadcastMessage(message: string){
+		for(let i in this.users){
+			this.users[i].send(message);
+		}
+	}
+
+	nameChange(oldId: string, user: User){
+		if(this.usernames[oldId]){
+			delete this.usernames[oldId];
+			this.usernames[user.userid] = user;
+		}
+		this.broadcastMessage(`${this.id}|cn|${oldId}|${user.username}`);
 	}
 
 	sendDeinit(user: User){

@@ -252,6 +252,8 @@ export class JeopardyRoom extends BaseRoom{
 		}else if(messageParts[0] === 'board'){
 			// The client should remake their board
 			this.replaceBoard(messageParts);
+		}else if(messageParts[0] === 'cn'){
+			this.updateName(messageParts[1], messageParts[2]);
 		}
 	}
 
@@ -294,6 +296,19 @@ export class JeopardyRoom extends BaseRoom{
 		}
 
 		this.drawPlayerList();
+	}
+
+	// Updates a player's name if required
+	updateName(oldName: string, newName: string){
+		let oldId = toId(oldName);
+		for(let player of this.players){
+			if(player.id === oldId){
+				player.name = newName;
+				player.id = toId(newName);
+				this.drawPlayerList();
+				return;
+			}
+		}
 	}
 
 	// Updates the given player's score, or add them if they do not exist

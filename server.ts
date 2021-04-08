@@ -27,11 +27,41 @@ const server = https.createServer(credentials, app);
 const wss = new WebSocket.Server({ server });
 
 let clients:{[id: number] : User;} = {};
+let usernames:{[username: string] : User;} = {};
 let rooms:{[id: string] : BaseRoom;} = {};
 let roomTypes:{[id: string] : typeof BaseRoom;} = {
 	'base': BaseRoom,
 	'chat': ChatRoom,
 	'jeopardy': JeopardyRoom
+}
+
+let changeName = (newName: string, user: User) => {
+	let newId = toId(newName);
+	let oldId = user.userid;
+	if(usernames[newId]){
+		// TODO should give an error to the client here
+		return;
+	}
+
+	user.setUsername(newName);
+	delete usernames[oldId];
+	usernames[newId] = user;
+
+	// Make sure all rooms acknowledge the name change
+	for(let id in rooms){
+		if(user.id in rooms[id].users){
+			rooms[id].nameChange(oldId, user);
+		}
+	}
+
+	// TODO send a message to the user to let them know the change was successful
+	user.send(`|n|${user.username}`);
+}
+
+let nameIsValid = (name: string) => {
+	if(name.length > 20 || name.length < 1) return false;
+	if(toId(name).match(/^guest\d+$/)) return false;
+	return true;
 }
 
 let main = new ChatRoom('Main', '');
@@ -41,6 +71,7 @@ wss.on('connection', (ws: WebSocket) => {
 	let user = new User(connectionCount, ws);
 	main.addUser(user);
 	clients[connectionCount] = user;
+	usernames[user.userid] = user;
 	connectionCount++;
 	console.log(`User joined: ${user.username}`);
 	ws.on('message', (message: string) => {
@@ -72,7 +103,6 @@ wss.on('connection', (ws: WebSocket) => {
 				// User is trying to make a room
 				// |createroom|roomtype|roomname|password
 				let roomType = parts[2];
-				// TODO disallow | and , in room names
 				let roomName = cleanName(parts[3]);
 				let roomPassword = parts.slice(4).join('|');
 				if(!(roomType in roomTypes)){
@@ -93,7 +123,7 @@ wss.on('connection', (ws: WebSocket) => {
 					if(room.password && room.password !== roomPassword){
 						user.send('|error|Invalid password given.');
 					}else{
-					room.addUser(user);
+						room.addUser(user);
 					}
 				}
 			}else if(command === 'leave'){
@@ -107,6 +137,17 @@ wss.on('connection', (ws: WebSocket) => {
 						delete rooms[roomId];
 					}
 				}
+			}else if(command === 'cn'){
+				// User wants to change their name
+				// |cn|newName
+				// Check if the new name is valid (is not guest #, no more than 20 chars
+				let newName = cleanName(parts[2]);
+				if(!nameIsValid(newName)){
+					// TODO Tell the user their name is invalid
+					return;
+				}
+
+				changeName(newName, user);
 			}
 		}
 		
@@ -114,12 +155,18 @@ wss.on('connection', (ws: WebSocket) => {
 
 	ws.on('close', (event) => {
 		console.log(`websocket closed from ${user.username}`);
+		// Remove from all rooms
 		for(let id in rooms){
 			if(user.id in rooms[id].users){
 				rooms[id].removeUser(user);
 			}
 		}
+		// Remove user from list
+		delete clients[user.id];
+		delete usernames[user.userid];
 	});
+
+	user.send(`|n|${user.username}`);
 });
 
 httpServer.listen(httpPort, () => {
