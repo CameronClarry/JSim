@@ -177,23 +177,30 @@ let createRoomListing = function(roomStr: string): HTMLElement {
 	let roomName = parts[0];
 	let roomId = toId(roomName);
 	let userCount = parseInt(parts[1]);
+	let roomType = parts[3];
 
 	// Create an entry for the room: name, player count, needs password
 	let td = document.createElement('td');
 	td.className = 'roomtd';
 
-	// Left div contains room name, and password field if required
+	let br;
+
+	// Left div contains room name, room type, and password field if required
 	let lDiv = document.createElement('div');
 	lDiv.className = 'ldiv';
 	let topDiv = document.createElement('div');
 	topDiv.textContent = roomName;
-	let br = document.createElement('br');
+	lDiv.appendChild(topDiv);
+	let bottomDiv = document.createElement('div');
+	bottomDiv.textContent = `Room type: ${roomType}`;
+	lDiv.appendChild(bottomDiv);
+
 	let pwLabel = document.createTextNode('Password: ');
 	let pwField = document.createElement('input');
 	pwField.type = 'password';
-	lDiv.appendChild(topDiv);
-	lDiv.appendChild(br);
 	if(parts[2] == 'y'){
+		br = document.createElement('br');
+		lDiv.appendChild(br);
 		lDiv.appendChild(pwLabel);
 		lDiv.appendChild(pwField);
 	}
