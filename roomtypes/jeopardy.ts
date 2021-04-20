@@ -199,6 +199,15 @@ export class JeopardyRoom extends BaseRoom{
 			if(this.isHost(from)){
 				this.replaceBoard(messageParts);
 			}
+		}else if(messageParts[0] === 'inc'){
+			if(this.isHost(from)){
+				let inc = parseInt(messageParts[1]);
+				if(isNaN(inc) || inc === 0 || inc < 0){
+					return;
+				}
+
+				this.setInc(inc);
+			}
 		}
 	}
 
@@ -430,6 +439,19 @@ export class JeopardyRoom extends BaseRoom{
 		// Replace the existing list and broadcast the change
 		this.categories = newCategories;
 		this.broadcastBoard();
+	}
+
+	// This function will change the value increment as questions get more difficult
+	setInc(inc: number){
+		// Update the value of each question
+		for(let cat of this.categories){
+			for(let i=0 ; i < cat.questions.length ; i++){
+				cat.questions[i].value = inc*(i+1);
+			}
+		}
+
+		// Send the updated baord
+		this.broadcastBoard()
 	}
 }
 

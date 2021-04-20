@@ -222,6 +222,8 @@ export class JeopardyRoom extends BaseRoom{
 				this.webSocket.send(`${this.id}|correct|${args[0]}|${args[1]}|${args[2]}`);
 			}else if(command === 'board'){
 				this.sendBoard(args[0]);
+			}else if(command === 'inc'){
+				this.webSocket.send(`${this.id}|inc|${args[0]}`);
 			}else{
 				this.giveFeedback(`The command '${command}' was not found.`);
 			}
@@ -233,7 +235,7 @@ export class JeopardyRoom extends BaseRoom{
 	receiveMessage(messageParts: string[]){
 		if(messageParts[0] === 't'){
 			if(this.textArea){
-				this.textArea.value = this.textArea.value + '\n' + messageParts.slice(1).join('|');
+				this.giveFeedback(messageParts.slice(1).join('|'));
 			}
 		}else if(messageParts[0] === 'q'){
 			this.updateQuestion(messageParts);
